@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DTC Acquisitions Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<style>
+:root{--navy:#1D3952;--navy2:#243f5e;--gold:#C8992A;--cream:#F0EDE6;--bg:#f5f3ef;--white:#fff;--border:#ddd8cf;--text:#1a1a1a;--muted:#6b7280;--red:#dc2626;--green:#16a34a;--amber:#d97706}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+#syncbar{background:var(--navy2);color:var(--cream);font-size:11px;padding:4px 16px;display:flex;align-items:center;justify-content:space-between}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px;display:inline-block}
+.bbtn{background:rgba(255,255,255,.1);border:none;color:var(--cream);padding:2px 10px;border-radius:4px;cursor:pointer;font-size:11px;margin-left:6px}
+#hdr{background:var(--navy);color:var(--cream);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.bname{font-family:'Playfair Display',serif;font-size:17px}
+.bsub{font-size:10px;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase}
+.hst{text-align:center}.hsv{font-size:17px;font-weight:600;color:var(--gold)}.hsl{font-size:10px;color:rgba(240,237,230,.6);letter-spacing:1px;text-transform:uppercase}
+#body{display:flex;height:calc(100vh - 80px);overflow:hidden}
+#sidebar{width:220px;background:var(--navy2);flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column}
+.nlbl{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(240,237,230,.4);margin-bottom:8px;padding:16px 12px 0}
+.nb{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;background:none;border:none;border-radius:6px;color:rgba(240,237,230,.75);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;text-align:left;transition:all .15s;margin-bottom:2px}
+.nb:hover{background:rgba(255,255,255,.07);color:var(--cream)}
+.nb.active{background:rgba(200,153,42,.2);color:var(--gold);font-weight:600}
+.nbadge{margin-left:auto;background:var(--gold);color:var(--navy);font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center}
+#sbuser{padding:8px 12px;color:var(--gold);font-size:12px;font-weight:600;margin-top:auto}
+#main{flex:1;overflow-y:auto;padding:24px}
+.view{display:none}.view.active{display:block}
+.phdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.ptitle{font-family:'Playfair Display',serif;font-size:22px;color:var(--navy)}
+.btn{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;transition:all .15s}
+.btng{background:var(--gold);color:#fff}.btng:hover{background:#b8891f}
+.btnn{background:var(--navy);color:var(--cream)}
+.btno{background:transparent;border:1px solid var(--border);color:var(--text)}.btno:hover{background:var(--cream)}
+.btnd{background:#fee2e2;color:var(--red);border:1px solid #fecaca}
+.btnge{background:#dcfce7;color:var(--green);border:1px solid #bbf7d0}
+.btnsm{padding:5px 10px;font-size:12px}
+.gcrd{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px}
+.pbar{background:#e5e7eb;border-radius:4px;height:8px;margin-top:8px;overflow:hidden}
+.pfill{height:100%;border-radius:4px;background:var(--gold);transition:width .5s}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+.scrd{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:16px;border-top:3px solid var(--navy)}
+.scrd.gld{border-top-color:var(--gold)}.scrd.grn{border-top-color:var(--green)}.scrd.rd{border-top-color:var(--red)}
+.sv{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--navy)}
+.sv.gld{color:var(--gold)}.sv.grn{color:var(--green)}
+.slbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.twrap{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{background:var(--navy);color:var(--cream);padding:10px 14px;text-align:left;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf8}
+.pscroll{overflow-x:auto;padding-bottom:16px}
+.pboard{display:flex;gap:14px;min-width:max-content}
+.pcol{width:230px;flex-shrink:0}
+.pcolhdr{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:6px 6px 0 0;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+.s1 .pcolhdr{background:#e0e7ff;color:#3730a3}.s2 .pcolhdr{background:#fef3c7;color:#92400e}.s3 .pcolhdr{background:#dbeafe;color:#1e40af}
+.s4 .pcolhdr{background:#f3e8ff;color:#6b21a8}.s5 .pcolhdr{background:#d1fae5;color:#065f46}.s6 .pcolhdr{background:#fee2e2;color:#991b1b}
+.s7 .pcolhdr{background:#fce7f3;color:#9d174d}.s8 .pcolhdr{background:#dcfce7;color:#15803d;border:2px solid #16a34a}.s9 .pcolhdr{background:#f1f5f9;color:#475569}
+.pcards{display:flex;flex-direction:column;gap:8px;min-height:60px}
+.dcrd{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .15s;border-left:3px solid var(--gold)}
+.dcrd:hover{box-shadow:0 2px 8px rgba(0,0,0,.1);transform:translateY(-1px)}
+.dcrd.urgent{border-left-color:var(--red)}.dcrd.hot{border-left-color:var(--green)}.dcrd.watching{border-left-color:var(--amber)}
+.chip{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.ch{background:#ede9fe;color:#6d28d9}.ct{background:#fef3c7;color:#92400e}.cp{background:#dbeafe;color:#1e40af}
+.cl{background:#fee2e2;color:#991b1b}.cv{background:#d1fae5;color:#065f46}.cf{background:#fce7f3;color:#9d174d}.co{background:#f1f5f9;color:#475569}
+.sb{padding:3px 9px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase}
+.sb1{background:#e0e7ff;color:#3730a3}.sb2{background:#fef3c7;color:#92400e}.sb3{background:#dbeafe;color:#1e40af}
+.sb4{background:#f3e8ff;color:#6d28d9}.sb5{background:#d1fae5;color:#065f46}.sb6{background:#fee2e2;color:#991b1b}
+.sb7{background:#fce7f3;color:#9d174d}.sb8{background:#dcfce7;color:#15803d}.sb9{background:#f1f5f9;color:#475569}
+.hbdg{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.hstrong{background:#dcfce7;color:#15803d}.hgood{background:#dbeafe;color:#1e40af}.hwarn{background:#fef3c7;color:#92400e}.hpoor{background:#fee2e2;color:#991b1b}
+.dsbdg{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.dssent{background:#dbeafe;color:#1e40af}.dssigned{background:#dcfce7;color:#15803d}.dspending{background:#fef3c7;color:#92400e}
+.fulist{display:flex;flex-direction:column;gap:8px}
+.fui{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer}
+.fui.overdue{border-left:3px solid var(--red)}.fui.today{border-left:3px solid var(--gold)}.fui.upcoming{border-left:3px solid var(--green)}
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
+.moverlay.open{display:flex}
+.modal{background:var(--white);border-radius:12px;width:100%;max-width:740px;box-shadow:0 20px 60px rgba(0,0,0,.3);margin:auto}
+.mhdr{background:var(--navy);color:var(--cream);padding:16px 24px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between}
+.mtitle{font-family:'Playfair Display',serif;font-size:18px}
+.mclose{background:none;border:none;color:var(--cream);font-size:22px;cursor:pointer;opacity:.7;line-height:1}
+.mbody{padding:20px 24px 24px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{display:flex;flex-direction:column;gap:5px}.fg.full{grid-column:1/-1}
+label{font-size:11px;font-weight:600;color:var(--navy);text-transform:uppercase;letter-spacing:.5px}
+input,select,textarea{padding:8px 11px;border:1px solid var(--border);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);background:var(--white);width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--navy)}
+textarea{resize:vertical;min-height:80px}
+.factions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.nspanel{background:#f0f9ff;border:1px solid #bae6fd;border-left:4px solid #0369a1;border-radius:8px;padding:14px;margin-bottom:14px}
+.nstitle{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#0369a1;margin-bottom:10px}
+.nsitem{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #e0f2fe;font-size:12px;color:#0c4a6e}
+.nsitem:last-child{border-bottom:none}
+.nsnum{background:#0369a1;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.expsec{background:#fffbeb;border:2px solid var(--gold);border-radius:10px;padding:16px;margin:14px 0}
+.exptitle{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy);margin-bottom:12px}
+.expadd{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.expadd input,.expadd select{padding:6px 8px;font-size:12px;flex:1;min-width:80px}
+.expitem{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px}
+.expitem:last-child{border-bottom:none}
+.exptot{background:var(--navy);color:var(--cream);padding:8px 12px;border-radius:6px;display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-top:8px}
+.profbox{background:linear-gradient(135deg,#1D3952,#243f5e);border-radius:10px;padding:16px;margin-top:10px;color:var(--cream)}
+.proftitle{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.profrow{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.1)}
+.profrow:last-child{border-bottom:none;font-size:16px;font-weight:700;color:var(--gold);padding-top:8px}
+.proflbl{opacity:.8}
+.tipgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.tipitem{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fafaf8;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px;transition:all .15s}
+.tipitem.done{background:#f0fdf4;border-color:#bbf7d0;color:#15803d}
+.driverow{display:flex;gap:8px;align-items:center}
+.driverow input{flex:1}
+.scrd2{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:14px}
+.stitle{font-family:'Playfair Display',serif;font-size:16px;color:var(--navy);margin-bottom:14px}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:16px}
+.srow:last-child{border-bottom:none}
+.srow input,.srow select{width:260px}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:var(--cream);padding:12px 20px;border-radius:8px;font-size:13px;z-index:999;transform:translateY(100px);opacity:0;transition:all .3s;border-left:4px solid var(--gold);max-width:320px}
+#toast.show{transform:translateY(0);opacity:1}
+.actitem{padding:10px 0;border-bottom:1px solid var(--border);font-size:12px}
+.actitem:last-child{border-bottom:none}
+@media(max-width:768px){.fgrid{grid-template-columns:1fr}.tipgrid{grid-template-columns:1fr}#hstats{display:none}#sidebar{width:190px}}
+</style>
+</head>
+<body>
+<div id="syncbar">
+  <div style="display:flex;align-items:center"><span class="sdot"></span><span id="syncst">Ready</span><span style="margin:0 12px;opacity:.4">|</span><span>User: <strong id="ulabel">Robert Davenport</strong></span></div>
+  <div><span id="lastsaved" style="opacity:.6;margin-right:8px"></span>
+    <button class="bbtn" onclick="exportData()">&#x1F4BE; Export</button>
+    <label class="bbtn" for="impfile" style="cursor:pointer">&#x1F4E5; Import</label>
+    <input type="file" id="impfile" accept=".json" style="display:none" onchange="doImport(this)">
+  </div>
+</div>
+<div id="hdr">
+  <div><div class="bname">DTC Acquisitions Manager</div><div class="bsub">Distressed Title &amp; Consulting LLC &mdash; AR &amp; NC</div></div>
+  <div id="hstats" style="display:flex;gap:24px">
+    <div class="hst"><div class="hsv" id="hactive">0</div><div class="hsl">Active</div></div>
+    <div class="hst"><div class="hsv" id="hpipe">$0</div><div class="hsl">Pipeline</div></div>
+    <div class="hst"><div class="hsv" id="hclosed">$90k</div><div class="hsl">Closed YTD</div></div>
+    <div class="hst"><div class="hsv" id="hdocs">0</div><div class="hsl">Docs Sent</div></div>
+  </div>
+</div>
+<div id="body">
+<div id="sidebar">
+  <div class="nlbl">Views</div>
+  <div style="padding:0 12px">
+    <button class="nb active" id="nb-dash" onclick="sv('dash')">&#x1F4CA; Dashboard</button>
+    <button class="nb" id="nb-pipe" onclick="sv('pipe')">&#x1F504; Pipeline <span class="nbadge" id="badgepipe">0</span></button>
+    <button class="nb" id="nb-fu" onclick="sv('fu')">&#x1F4C5; Follow-Ups <span class="nbadge" id="badgefu">0</span></button>
+    <button class="nb" id="nb-all" onclick="sv('all')">&#x1F4CB; All Deals</button>
+    <button class="nb" id="nb-ds" onclick="sv('ds')">&#x1F4E4; DocuSign Log <span class="nbadge" id="badgeds">0</span></button>
+    <button class="nb" id="nb-act" onclick="sv('act')">&#x1F4DD; Activity</button>
+  </div>
+  <div class="nlbl">Actions</div>
+  <div style="padding:0 12px">
+    <button class="nb" onclick="openAdd()">&#x2795; New Lead</button>
+    <button class="nb" id="nb-set" onclick="sv('set')">&#x2699;&#xFE0F; Settings</button>
+  </div>
+  <div id="sbuser" style="padding:8px 12px;color:var(--gold);font-size:12px;font-weight:600;margin-top:auto">Robert Davenport</div>
+</div>
+<div id="main">
+
+<!-- DASHBOARD -->
+<div class="view active" id="view-dash">
+  <div class="phdr"><div class="ptitle">Dashboard</div><button class="btn btng" onclick="openAdd()">+ New Lead</button></div>
+  <div class="gcrd">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+      <div><div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--navy)">2025 Revenue Goal &mdash; $800,000</div><div style="font-size:12px;color:var(--muted);margin-top:4px">January net $90,000 banked &middot; DocuSign active</div></div>
+      <div style="font-size:28px;font-weight:700;color:var(--gold)" id="gpct">11%</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span id="glbl">$90,000 closed</span><span style="color:var(--muted)">Goal: $800,000</span></div>
+    <div class="pbar"><div class="pfill" id="gbar" style="width:11%"></div></div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);display:flex;gap:20px;flex-wrap:wrap">
+      <span>Jan Net: <strong style="color:var(--green)">$90,000</strong></span>
+      <span id="glrem">Remaining: <strong>$710,000</strong></span>
+      <span id="glneed">~16 more deals needed</span>
+    </div>
+  </div>
+  <div class="sgrid">
+    <div class="scrd"><div class="sv" id="stotal">0</div><div class="slbl">Total Leads</div></div>
+    <div class="scrd gld"><div class="sv gld" id="sactive">0</div><div class="slbl">Active Deals</div></div>
+    <div class="scrd grn"><div class="sv grn" id="sclosed">0</div><div class="slbl">Closed</div></div>
+    <div class="scrd rd"><div class="sv" style="color:var(--red)" id="sdue">0</div><div class="slbl">Follow-Ups Due</div></div>
+    <div class="scrd"><div class="sv" id="spipe">$0</div><div class="slbl">Pipeline Value</div></div>
+    <div class="scrd gld"><div class="sv gld" id="sdssent">0</div><div class="slbl">DocuSign Sent</div></div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--navy)">Recent Deals</div>
+    <button class="btn btno btnsm" onclick="sv('all')">View All &rarr;</button>
+  </div>
+  <div class="twrap"><table><thead><tr><th>Address</th><th>Stage</th><th>Type</th><th>Health</th><th>Equity</th><th>Follow-Up</th><th></th></tr></thead><tbody id="dashtbody"></tbody></table></div>
+</div>
+
+<!-- PIPELINE -->
+<div class="view" id="view-pipe">
+  <div class="phdr"><div class="ptitle">Pipeline</div><button class="btn btng" onclick="openAdd()">+ New Lead</button></div>
+  <div class="pscroll"><div class="pboard" id="pboard"></div></div>
+</div>
+
+<!-- FOLLOW-UPS -->
+<div class="view" id="view-fu">
+  <div class="phdr"><div class="ptitle">Follow-Up Queue</div></div>
+  <div id="fuov" style="margin-bottom:20px"></div>
+  <div id="futd" style="margin-bottom:20px"></div>
+  <div id="fuup"></div>
+</div>
+
+<!-- ALL DEALS -->
+<div class="view" id="view-all">
+  <div class="phdr"><div class="ptitle">All Deals</div><button class="btn btng" onclick="openAdd()">+ New Lead</button></div>
+  <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+    <input type="text" id="srch" placeholder="&#x1F50D; Search..." oninput="renderAll()" style="flex:1;min-width:200px">
+    <select id="sfsf" onchange="renderAll()"><option value="">All States</option><option value="AR">Arkansas</option><option value="NC">North Carolina</option></select>
+    <select id="sfst" onchange="renderAll()"><option value="">All Stages</option><option value="1">Lead</option><option value="2">Research</option><option value="3">Contact</option><option value="4">Negotiate</option><option value="5">Cure</option><option value="6">Monetize</option><option value="7">Listed</option><option value="8">Closed</option><option value="9">Dead</option></select>
+    <select id="sftp" onchange="renderAll()"><option value="">All Types</option><option value="heir">Heir</option><option value="tax">Tax Delinq.</option><option value="probate">Probate</option><option value="lien">Lien Stack</option><option value="vacant">Vacant</option><option value="foreclosure">Foreclosure</option></select>
+  </div>
+  <div class="twrap"><table><thead><tr><th>Address</th><th>Owner</th><th>State</th><th>Type</th><th>Stage</th><th>Health</th><th>Equity</th><th>DocuSign</th><th>Follow-Up</th><th></th></tr></thead><tbody id="alltbody"></tbody></table></div>
+</div>
+
+<!-- DOCUSIGN LOG -->
+<div class="view" id="view-ds">
+  <div class="phdr"><div class="ptitle">DocuSign Log</div></div>
+  <div id="dscontent"><div style="text-align:center;color:var(--muted);padding:48px">No contracts sent yet.</div></div>
+</div>
+
+<!-- ACTIVITY -->
+<div class="view" id="view-act">
+  <div class="phdr"><div class="ptitle">Activity Log</div></div>
+  <div class="twrap" style="padding:16px"><div id="actcontent"></div></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="view" id="view-set">
+  <div class="phdr"><div class="ptitle">Settings</div></div>
+  <div class="scrd2">
+    <div class="stitle">&#x1F464; User</div>
+    <div class="srow"><div><div style="font-weight:600">Your Name</div></div>
+      <select id="setuser" onchange="setUser(this.value)" style="width:220px"><option value="Robert Davenport">Robert Davenport</option><option value="Cullen Eggleston">Cullen Eggleston</option></select>
+    </div>
+  </div>
+  <div class="scrd2">
+    <div class="stitle">&#x1F510; DocuSign Templates</div>
+    <div class="srow"><div><div style="font-weight:600">AR Purchase Contract</div></div><input type="text" id="setartmpl" value="7174a0a4-39d2-4977-be96-1e848bdbc2a0"></div>
+    <div class="srow"><div><div style="font-weight:600">NC Purchase Contract</div></div><input type="text" id="setnctmpl" value="523085fd-a107-48ff-84db-9b7d54535c6e"></div>
+    <div style="margin-top:12px"><button class="btn btnn btnsm" onclick="saveSet()">Save Settings</button></div>
+  </div>
+  <div class="scrd2">
+    <div class="stitle">&#x1F4BE; Data</div>
+    <div class="srow"><div><div style="font-weight:600">Export Backup</div><div style="font-size:12px;color:var(--muted)">Share with Cullen to sync</div></div><button class="btn btno btnsm" onclick="exportData()">Export</button></div>
+    <div class="srow"><div><div style="font-weight:600">Import / Merge</div></div><label class="btn btno btnsm" for="impfile2" style="cursor:pointer;display:inline-block">Import</label><input type="file" id="impfile2" accept=".json" style="display:none" onchange="doImport(this)"></div>
+    <div class="srow"><div><div style="font-weight:600">Clear All Data</div></div><button class="btn btnd btnsm" onclick="clearAll()">Clear</button></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="moverlay" id="mdeal">
+  <div class="modal">
+    <div class="mhdr"><div class="mtitle" id="mtitle">New Lead</div><button class="mclose" onclick="closeM()">&#x2715;</button></div>
+    <div class="mbody">
+      <input type="hidden" id="eid">
+      <div id="nsc"></div>
+      <div class="fgrid">
+        <div class="fg full"><label>Property Address *</label><input type="text" id="fa" placeholder="123 Main St, Little Rock, AR 72201" oninput="rns()"></div>
+        <div class="fg"><label>County</label><input type="text" id="fco" placeholder="Pulaski"></div>
+        <div class="fg"><label>State</label><select id="fst" onchange="rns()"><option value="AR">Arkansas</option><option value="NC">North Carolina &mdash; Cumberland County</option></select></div>
+        <div class="fg"><label>Owner / Heir Name(s)</label><input type="text" id="fown" placeholder="John Smith / Estate of..."></div>
+        <div class="fg"><label>Owner Email (DocuSign)</label><input type="email" id="fem" placeholder="owner@email.com"></div>
+        <div class="fg"><label>Owner Phone</label><input type="tel" id="fph" placeholder="870-555-0000"></div>
+        <div class="fg"><label>Deal Type</label><select id="ftp" onchange="rns()"><option value="heir">Heir Property</option><option value="tax">Tax Delinquent</option><option value="probate">Probate</option><option value="lien">Lien Stack / IRS</option><option value="vacant">Vacant / Abandoned</option><option value="foreclosure">Foreclosure</option><option value="other">Other</option></select></div>
+        <div class="fg"><label>Stage</label><select id="fsg" onchange="rns()"><option value="1">1 &middot; Lead</option><option value="2">2 &middot; Research</option><option value="3">3 &middot; Contact Made</option><option value="4">4 &middot; Negotiate</option><option value="5">5 &middot; Cure Plan</option><option value="6">6 &middot; Monetize</option><option value="7">7 &middot; Listed / Under Contract</option><option value="8">8 &middot; Closed</option><option value="9">Dead Lead</option></select></div>
+        <div class="fg"><label>Est. Market Value ($)</label><input type="number" id="fmv" placeholder="190000" oninput="rpr()"></div>
+        <div class="fg"><label>Est. Total Debt / Liens ($)</label><input type="number" id="fdt" placeholder="15000" oninput="rpr()"></div>
+        <div class="fg"><label>Target Purchase Price ($)</label><input type="number" id="fpp" placeholder="20000"></div>
+        <div class="fg"><label>Actual Close Price ($)</label><input type="number" id="fcp" placeholder="0" oninput="rpr()"></div>
+        <div class="fg"><label>Lead Source</label><select id="fls"><option value="tax-list">Tax Delinquent List</option><option value="cosl">COSL Auction</option><option value="driving">Driving for Dollars</option><option value="probate">Probate Court</option><option value="assessor">Assessor</option><option value="referral-atty">Attorney Referral</option><option value="referral-agent">Agent Referral</option><option value="referral-investor">Investor / JV Referral</option><option value="direct-mail">Direct Mail</option><option value="other">Other</option></select></div>
+        <div class="fg"><label>Follow-Up Date</label><input type="date" id="ffu"></div>
+        <div class="fg"><label>Priority</label><select id="fpr"><option value="normal">Normal</option><option value="hot">&#x1F525; Hot</option><option value="urgent">&#x1F6A8; Urgent</option><option value="watching">&#x1F441; Watching</option></select></div>
+        <div class="fg"><label>Your Split %</label><input type="number" id="fsp" placeholder="50" min="0" max="100" oninput="rpr()"></div>
+        <div class="fg full"><label>Google Drive Folder</label><div class="driverow"><input type="url" id="fdr" placeholder="Paste Google Drive link..."><button type="button" class="btn btno btnsm" onclick="openDrive()">&#x1F4C1; Open</button></div></div>
+        <div class="fg full"><label>Title / TIP Notes</label><textarea id="fnt" placeholder="Chain of title issues, liens, trust structure..."></textarea></div>
+        <div class="fg full"><label>Call Log / Contact Notes</label><textarea id="fnc" placeholder="4/24/26 — Called owner, left voicemail..."></textarea></div>
+        <div class="fg full"><label>Next Action</label><input type="text" id="fna" placeholder="Pull title from county recorder..."></div>
+        <div class="fg full"><label>Legal Description</label><input type="text" id="fld" placeholder="Lot 316, Block 0, Walnut Valley Addition..."></div>
+        <div class="fg"><label>Parcel Number</label><input type="text" id="fpn" placeholder="###-###-###"></div>
+      </div>
+
+      <!-- PETITO ANALYSIS -->
+      <div style="margin:16px 0;border:2px solid var(--navy);border-radius:10px;overflow:hidden">
+        <div style="background:var(--navy);color:var(--cream);padding:10px 16px;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase">&#x1F4CB; P.E.T.I.T.O. Deal Analysis</div>
+        <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div class="fg full" style="grid-column:1/-1">
+            <label style="color:#1e40af">P &mdash; Property (condition, as-is value, ARV)</label>
+            <textarea id="pet_p" placeholder="Single-family, poor condition. As-is value: $X. ARV: $X. Not retail-ready." style="min-height:60px"></textarea>
+          </div>
+          <div class="fg full" style="grid-column:1/-1">
+            <label style="color:#15803d">E &mdash; Equity (market minus all liens, taxes, fees)</label>
+            <textarea id="pet_e" placeholder="Market $X - taxes $X - liens $X - attorney fees $X = estimated equity $X." style="min-height:60px"></textarea>
+          </div>
+          <div class="fg full" style="grid-column:1/-1">
+            <label style="color:#92400e">T &mdash; Title (defect, heirs, ownership structure)</label>
+            <textarea id="pet_t" placeholder="Title in deceased owner name. X heirs total, X predeceased, X surviving. Intestate / no will. No probate filed." style="min-height:60px"></textarea>
+          </div>
+          <div class="fg full" style="grid-column:1/-1">
+            <label style="color:#6b21a8">I &mdash; Interested Parties (decision makers, contacts)</label>
+            <textarea id="pet_i" placeholder="Spoke with X (local heir). Claims disagreement among heirs. Attorney involved. Other heirs at X distance." style="min-height:60px"></textarea>
+          </div>
+          <div class="fg full" style="grid-column:1/-1">
+            <label style="color:#991b1b">T &mdash; Threats (tax sale, family conflict, liens, code)</label>
+            <textarea id="pet_t2" placeholder="$X delinquent taxes. Tax sale exposure: [date]. Family conflict. Code enforcement liens. Attorney involvement." style="min-height:60px"></textarea>
+          </div>
+          <div class="fg full" style="grid-column:1/-1">
+            <label style="color:#0369a1">O &mdash; Opportunities (leverage, timing, angles)</label>
+            <textarea id="pet_o" placeholder="Heir conflict + delay = leverage. Time pressure from tax sale. Non-retail condition limits competition. Buyout angle." style="min-height:60px"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="expsec">
+        <div class="exptitle">&#x1F4B0; Expense Tracker</div>
+        <div class="expadd">
+          <select id="ecat" style="min-width:130px"><option>Attorney</option><option>Filing Fees</option><option>Court Costs</option><option>Back Taxes</option><option>Repairs</option><option>Marketing</option><option>Notary</option><option>Title Search</option><option>Locksmith</option><option>Lawn/Maintenance</option><option>Insurance</option><option>Commission</option><option>UPS/Shipping</option><option>Other</option></select>
+          <input type="text" id="edesc" placeholder="Description" style="min-width:100px">
+          <input type="number" id="eamt" placeholder="$Amount" style="max-width:100px">
+          <input type="date" id="edt" style="max-width:140px">
+          <button type="button" class="btn btng btnsm" onclick="addExp()">+ Add</button>
+        </div>
+        <div id="explist"><div style="font-size:12px;color:var(--muted);padding:4px">No expenses yet.</div></div>
+        <div class="exptot"><span>Total Expenses</span><span style="color:var(--gold)" id="exptotal">$0</span></div>
+        <div class="profbox">
+          <div class="proftitle">Profit Calculator</div>
+          <div class="profrow"><span class="proflbl">Sale / Close Price</span><span id="pcsale">$0</span></div>
+          <div class="profrow"><span class="proflbl">Total Expenses</span><span id="pcexp" style="color:#fca5a5">-$0</span></div>
+          <div class="profrow"><span class="proflbl">Back Taxes / Debt</span><span id="pcdebt" style="color:#fca5a5">-$0</span></div>
+          <div class="profrow"><span class="proflbl">Net Proceeds</span><span id="pcnet">$0</span></div>
+          <div class="profrow"><span class="proflbl" id="pcsplitlbl">Your Share (50%)</span><span id="pcshare">$0</span></div>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);padding-bottom:8px;border-bottom:1px solid var(--border)">TIP Checklist</div>
+        <div class="tipgrid" id="tipgrid">
+          <div class="tipitem" onclick="tt(this)" data-k="addr">&#9744; Address Confirmed</div>
+          <div class="tipitem" onclick="tt(this)" data-k="assessor">&#9744; Assessor Pulled</div>
+          <div class="tipitem" onclick="tt(this)" data-k="tax">&#9744; Tax Collector Checked</div>
+          <div class="tipitem" onclick="tt(this)" data-k="recorder">&#9744; Recorder Searched</div>
+          <div class="tipitem" onclick="tt(this)" data-k="chain">&#9744; Chain of Title Traced</div>
+          <div class="tipitem" onclick="tt(this)" data-k="liens">&#9744; Liens Identified</div>
+          <div class="tipitem" onclick="tt(this)" data-k="court">&#9744; Court Records Checked</div>
+          <div class="tipitem" onclick="tt(this)" data-k="pacer">&#9744; Bankruptcy (PACER)</div>
+          <div class="tipitem" onclick="tt(this)" data-k="heirs">&#9744; Heirs Identified</div>
+          <div class="tipitem" onclick="tt(this)" data-k="dm">&#9744; Decision Maker Located</div>
+          <div class="tipitem" onclick="tt(this)" data-k="skip">&#9744; Skip Trace Complete</div>
+          <div class="tipitem" onclick="tt(this)" data-k="equity">&#9744; Equity Calculated</div>
+          <div class="tipitem" onclick="tt(this)" data-k="cure">&#9744; Cure Cost Estimated</div>
+          <div class="tipitem" onclick="tt(this)" data-k="pain">&#9744; Pain Points Identified</div>
+          <div class="tipitem" onclick="tt(this)" data-k="offer">&#9744; Offer Structured</div>
+          <div class="tipitem" onclick="tt(this)" data-k="contract">&#9744; Contract Signed</div>
+        </div>
+      </div>
+      <div class="factions">
+        <button class="btn btno" onclick="closeM()">Cancel</button>
+        <button class="btn btnd btnsm" id="delbtn" onclick="delDeal()" style="display:none">Delete</button>
+        <button class="btn btno btnsm" id="prtbtn" onclick="prtDeal()" style="display:none">&#x1F5A8;&#xFE0F; Print</button>
+        <button class="btn btnge btnsm" id="dsbtn" onclick="sendDS()" style="display:none">&#x1F4E4; Send via DocuSign</button>
+        <button class="btn btng" onclick="saveDeal()">Save Deal</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+// DTC ACQUISITIONS MANAGER v4 — CLEAN BUILD
+const SK='dtc-v4',UK='dtc-u-v4',SETK='dtc-s-v4';
+const GOAL=800000,JNET=90000;
+const EJS_S='service_zoyu67m',EJS_T='template_7wizyka',EJS_K='y7PWkVrGHwsO9Rjuz';
+const NOTIFY='acquisitions@investingrcc.com';
+
+let deals=[],activity=[],tipst={},exps=[],eid=null;
+let CU=localStorage.getItem(UK)||'Robert Davenport';
+let SET=JSON.parse(localStorage.getItem(SETK)||'{}');
+
+const SN={1:'Lead',2:'Research',3:'Contact',4:'Negotiate',5:'Cure',6:'Monetize',7:'Listed',8:'Closed',9:'Dead'};
+const TN={heir:'Heir',tax:'Tax Delinq.',probate:'Probate',lien:'Lien Stack',vacant:'Vacant',foreclosure:'Foreclosure',other:'Other'};
+const TC={heir:'ch',tax:'ct',probate:'cp',lien:'cl',vacant:'cv',foreclosure:'cf',other:'co'};
+
+const NS={
+  heir:{1:['Pull Assessor — confirm owner & mailing address','Search obituaries — identify deceased owner','Begin building family tree — find all heirs'],2:['Pull full Recorder title search','Identify all heirs and percentages','Run skip trace on all heirs','Calculate equity: market minus all liens'],3:['Contact decision maker — be a problem-solver','Identify pain point: distress, overwhelm, or distance','Send outreach letter via certified mail'],4:['Build TIP Report before making offer','Get AR Purchase Contract signed','Record Memorandum of Contract immediately'],5:['File Affidavit of Heirship with county Recorder','Clear back taxes with county collector','Get signatures from ALL heirs'],7:['List on MLS as-is with Special Warranty Deed','Coordinate closing with title company'],8:['Closed — update close price and log revenue']},
+  probate:{1:['Pull probate court docket — case number & status','Confirm personal representative if appointed'],2:['Pull Recorder title search','Identify all heirs and creditors'],3:['Contact personal representative — they have authority'],4:['Get Purchase Contract signed by PR','Record Memorandum of Contract'],5:['Attorney petitions court for approval if required'],7:['List or close — PR Deed conveys title'],8:['Closed']},
+  lien:{1:['Confirm property — pull assessor data','Identify all lien holders and amounts'],2:['Pull full title at Recorder','Order payoff statements from all lien holders','Check IRS lien database and PACER'],3:['Contact owner — focus on relief from debt','Build Leverage Ledger showing cost of inaction'],4:['Structure offer accounting for full cure cost','Get Purchase Contract signed via DocuSign','If IRS lien — consult attorney re: Form 14135'],5:['File Form 14135 with IRS if IRS lien present','Negotiate judgment liens — pennies on dollar','Pay property tax delinquencies'],7:['List on MLS — Special Warranty Deed'],8:['Closed']},
+  tax:{1:['Confirm property on delinquent list','Check if 2+ years delinquent (approaching COSL)'],2:['Pull Recorder title search','Skip trace owner if absentee'],3:['Contact owner — urgency is your leverage'],4:['Get Purchase Contract signed via DocuSign'],5:['Pay delinquent taxes to county collector'],7:['List on MLS'],8:['Closed']},
+  foreclosure:{1:['Identify stage: pre-foreclosure or lis pendens','Calculate redemption period remaining'],3:['Contact owner immediately — time is critical'],4:['Get contract signed — move fast'],7:['Close before auction date'],8:['Closed']},
+  vacant:{1:['Research owner at assessor','Drive by — note condition and vacancy'],2:['Full title search at Recorder','Skip trace owner'],3:['Send handwritten note to property and mailing address'],4:['Negotiate purchase — get contract signed'],7:['List or flip'],8:['Closed']}
+};
+
+// EmailJS
+try{emailjs.init(EJS_K);}catch(e){}
+async function notify(type,deal,details){
+  try{await emailjs.send(EJS_S,EJS_T,{to_email:NOTIFY,alert_type:type,deal_address:deal?deal.address:'N/A',details:details||'',stage:deal?SN[deal.stage]||deal.stage:'',priority:deal?deal.priority||'':'',followup_date:deal&&deal.followup?fd(deal.followup):'Not set',sent_by:CU,email:NOTIFY});}
+  catch(e){console.warn('Email failed:',e);}
+}
+function checkFU(){
+  const today=new Date().toISOString().slice(0,10);
+  if(localStorage.getItem('dtc-lastfu')===today)return;
+  localStorage.setItem('dtc-lastfu',today);
+  deals.filter(d=>d.followup===today&&d.stage!=8&&d.stage!=9).forEach(d=>notify('FOLLOW-UP DUE TODAY',d,'Check deal notes'));
+  const ov=deals.filter(d=>d.followup&&d.followup<today&&d.stage!=8&&d.stage!=9);
+  if(ov.length)notify('OVERDUE FOLLOW-UPS',null,ov.length+' overdue: '+ov.map(d=>d.address).join(', '));
+}
+
+// Helpers
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function f$(n){if(!n||isNaN(n))return'—';return'$'+Number(n).toLocaleString();}
+function fd(d){if(!d)return'—';return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function dd(d){if(!d)return null;const t=new Date();t.setHours(0,0,0,0);const g=new Date(d+'T12:00:00');g.setHours(0,0,0,0);return Math.round((g-t)/86400000);}
+function eq(d){return(parseFloat(d.market)||0)-(parseFloat(d.debt)||0);}
+function chip(t){return'<span class="chip '+(TC[t]||'co')+'">'+(TN[t]||t)+'</span>';}
+function sb(s){return'<span class="sb sb'+s+'">'+(SN[s]||s)+'</span>';}
+function hlth(d){
+  const tip=d.tip||{};const sc=Math.round((Object.keys(tip).filter(k=>tip[k]).length/16)*50)+(d.email?10:0)+(d.driveLink?10:0)+((d.noteCall&&d.noteCall.length>10)?10:0)+(d.dsStatus==='signed'?10:0)+(d.followup&&dd(d.followup)>=0?10:0);
+  if(sc>=70)return'<span class="hbdg hstrong">Strong</span>';
+  if(sc>=50)return'<span class="hbdg hgood">Good</span>';
+  if(sc>=30)return'<span class="hbdg hwarn">Needs Work</span>';
+  return'<span class="hbdg hpoor">Attention</span>';
+}
+function dsbdg(s){if(!s)return'<span style="color:var(--muted);font-size:11px">—</span>';return'<span class="dsbdg ds'+s+'">'+s+'</span>';}
+
+// Storage
+function save(){localStorage.setItem(SK,JSON.stringify({deals,activity,at:new Date().toISOString(),by:CU}));document.getElementById('lastsaved').textContent='Saved '+new Date().toLocaleTimeString();}
+function load(){try{const r=localStorage.getItem(SK);if(!r)return;const d=JSON.parse(r);deals=d.deals||[];activity=d.activity||[];}catch(e){}}
+function exportData(){
+  const b=new Blob([JSON.stringify({deals,activity,by:CU,at:new Date().toISOString()},null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='DTC_CRM_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(u);
+  toast('Backup exported');
+}
+function doImport(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.deals){
+        const m=[...deals];
+        d.deals.forEach(inc=>{const i=m.findIndex(x=>x.id===inc.id);if(i===-1)m.push(inc);else if(!m[i].updatedAt||new Date(inc.updatedAt)>new Date(m[i].updatedAt))m[i]=inc;});
+        deals=m;
+        if(d.activity)activity=[...activity,...d.activity.filter(a=>!activity.find(x=>x.id===a.id))];
+        save();render();toast('Imported — '+d.deals.length+' deals loaded');
+      }else{toast('Invalid backup file');}
+    }catch(e){toast('Could not read file');}
+    inp.value='';
+  };
+  r.readAsText(f);
+}
+function clearAll(){if(!confirm('Delete ALL data?'))return;deals=[];activity=[];save();render();toast('Cleared');}
+function logA(action,addr){activity.unshift({id:uid(),user:CU,action,deal:addr||'',time:new Date().toISOString()});if(activity.length>100)activity=activity.slice(0,100);}
+
+// User & Settings
+function setUser(v){CU=v;localStorage.setItem(UK,v);document.getElementById('ulabel').textContent=v;document.getElementById('sbuser').textContent=v;toast('User: '+v);}
+function saveSet(){SET={ar:document.getElementById('setartmpl').value.trim(),nc:document.getElementById('setnctmpl').value.trim()};localStorage.setItem(SETK,JSON.stringify(SET));toast('Settings saved');}
+
+// Toast
+function toast(msg,dur=3500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+// Nav
+function sv(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  const nb=document.getElementById('nb-'+id);if(nb)nb.classList.add('active');
+  render();
+}
+
+// Render
+function render(){rHdr();rDash();rPipe();rFU();renderAll();rDS();rAct();rBadges();}
+function rHdr(){
+  const act=deals.filter(d=>d.stage!=8&&d.stage!=9);
+  const cl=deals.filter(d=>d.stage==8);
+  const pv=act.reduce((s,d)=>s+(parseFloat(d.market)||0),0);
+  const cv=cl.reduce((s,d)=>s+(parseFloat(d.closePrice)||0),0)+JNET;
+  document.getElementById('hactive').textContent=act.length;
+  document.getElementById('hpipe').textContent='$'+Math.round(pv/1000)+'k';
+  document.getElementById('hclosed').textContent='$'+Math.round(cv/1000)+'k';
+  document.getElementById('hdocs').textContent=deals.filter(d=>d.dsStatus).length;
+}
+function rDash(){
+  const act=deals.filter(d=>d.stage!=8&&d.stage!=9);
+  const cl=deals.filter(d=>d.stage==8);
+  const due=deals.filter(d=>d.followup&&d.stage!=8&&d.stage!=9&&dd(d.followup)<=0);
+  const pv=act.reduce((s,d)=>s+(parseFloat(d.market)||0),0);
+  const cv=cl.reduce((s,d)=>s+(parseFloat(d.closePrice)||0),0)+JNET;
+  document.getElementById('stotal').textContent=deals.length;
+  document.getElementById('sactive').textContent=act.length;
+  document.getElementById('sclosed').textContent=cl.length;
+  document.getElementById('sdue').textContent=due.length;
+  document.getElementById('spipe').textContent=f$(pv);
+  document.getElementById('sdssent').textContent=deals.filter(d=>d.dsStatus).length;
+  const pct=Math.min(100,Math.round((cv/GOAL)*100));
+  document.getElementById('gpct').textContent=pct+'%';
+  document.getElementById('gbar').style.width=pct+'%';
+  document.getElementById('glbl').textContent=f$(cv)+' closed';
+  document.getElementById('glrem').innerHTML='Remaining: <strong>'+f$(Math.max(0,GOAL-cv))+'</strong>';
+  document.getElementById('glneed').innerHTML='~'+Math.ceil(Math.max(0,GOAL-cv)/45000)+' more deals needed';
+  const recent=[...deals].reverse().slice(0,8);
+  const tb=document.getElementById('dashtbody');
+  if(!recent.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No leads yet. Click + New Lead to get started.</td></tr>';return;}
+  tb.innerHTML=recent.map(d=>{
+    const df=dd(d.followup);
+    const fc=df===null?'':df<0?'color:var(--red)':df===0?'color:var(--gold);font-weight:600':'color:var(--green)';
+    const fl=df===null?'—':df<0?Math.abs(df)+'d overdue':df===0?'Today!':df+'d';
+    return'<tr><td style="font-weight:600;color:var(--navy);cursor:pointer" onclick="openD(\''+d.id+'\')">'+d.address+'</td><td>'+sb(d.stage)+'</td><td>'+chip(d.type)+'</td><td>'+hlth(d)+'</td><td style="color:var(--green);font-weight:600">'+f$(eq(d))+'</td><td><span style="'+fc+'">'+fl+'</span></td><td style="white-space:nowrap"><button class="btn btno btnsm" onclick="openD(\''+d.id+'\')">Open</button>'+(d.driveLink?' <a href="'+d.driveLink+'" target="_blank" class="btn btnge btnsm">&#x1F4C1;</a>':'')+'</td></tr>';
+  }).join('');
+}
+function rPipe(){
+  const stages=[{n:1,c:'s1'},{n:2,c:'s2'},{n:3,c:'s3'},{n:4,c:'s4'},{n:5,c:'s5'},{n:6,c:'s6'},{n:7,c:'s7'},{n:8,c:'s8'},{n:9,c:'s9'}];
+  document.getElementById('pboard').innerHTML=stages.map(s=>{
+    const sd=deals.filter(d=>Number(d.stage)===s.n);
+    const cards=sd.length?sd.map(d=>{
+      const df=dd(d.followup);const fu=df===null?'':df<0?'&#9888; '+Math.abs(df)+'d':df===0?'&#9889; Today':'&#x1F4C5; '+df+'d';
+      return'<div class="dcrd '+(d.priority==='urgent'?'urgent':d.priority==='hot'?'hot':d.priority==='watching'?'watching':'')+'" onclick="openD(\''+d.id+'\')">'+'<div style="font-weight:600;font-size:13px;color:var(--navy);margin-bottom:4px">'+d.address+'</div><div style="font-size:11px;color:var(--muted);margin-bottom:6px">'+(d.owner||'Owner TBD')+'</div><div>'+chip(d.type)+'</div>'+(eq(d)>0?'<div style="font-size:12px;font-weight:600;color:var(--green);margin-top:4px">Eq: '+f$(eq(d))+'</div>':'')+(fu?'<div style="font-size:10px;color:var(--red);font-weight:500;margin-top:4px">'+fu+'</div>':'')+'</div>';
+    }).join(''):'<div style="color:#9ca3af;font-size:12px;padding:12px;text-align:center">Empty</div>';
+    return'<div class="pcol '+s.c+'"><div class="pcolhdr"><span>'+(SN[s.n]||s.n)+'</span><span>'+sd.length+'</span></div><div class="pcards">'+cards+'</div></div>';
+  }).join('');
+}
+function rFU(){
+  const act=deals.filter(d=>d.followup&&d.stage!=8&&d.stage!=9).sort((a,b)=>new Date(a.followup)-new Date(b.followup));
+  const ov=act.filter(d=>dd(d.followup)<0);
+  const td=act.filter(d=>dd(d.followup)===0);
+  const up=act.filter(d=>dd(d.followup)>0);
+  const sec=(title,arr,cls)=>{
+    if(!arr.length)return'';
+    return'<div style="margin-bottom:16px"><div style="font-family:\'Playfair Display\',serif;font-size:16px;color:var(--navy);margin-bottom:10px">'+title+' ('+arr.length+')</div><div class="fulist">'+arr.map(d=>{
+      const df=dd(d.followup);const lbl=df<0?Math.abs(df)+' days overdue':df===0?'Due Today!':df+' days';
+      const steps=NS[d.type]&&NS[d.type][Number(d.stage)];const ns=steps?steps[0].slice(0,60)+'...':d.nextAction||'No next action';
+      return'<div class="fui '+cls+'" onclick="openD(\''+d.id+'\')">'+'<div><div style="font-weight:600;font-size:13px;color:var(--navy)">'+d.address+'</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Next: '+ns+'</div></div>'+'<div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:600;'+(cls==='overdue'?'color:var(--red)':cls==='today'?'color:var(--gold)':'color:var(--green)')+'">'+lbl+'</div><div style="font-size:11px;color:var(--muted);margin-top:2px">'+fd(d.followup)+'</div>'+sb(d.stage)+'</div></div>';
+    }).join('')+'</div></div>';
+  };
+  document.getElementById('fuov').innerHTML=sec('&#x1F6A8; Overdue',ov,'overdue');
+  document.getElementById('futd').innerHTML=sec('&#9889; Due Today',td,'today');
+  document.getElementById('fuup').innerHTML=sec('&#x1F4C5; Upcoming',up,'upcoming');
+  if(!act.length)document.getElementById('fuov').innerHTML='<div style="text-align:center;color:var(--muted);padding:48px">No follow-ups scheduled.</div>';
+}
+function renderAll(){
+  const s=(document.getElementById('srch')?.value||'').toLowerCase();
+  const sf=document.getElementById('sfsf')?.value||'';
+  const st=document.getElementById('sfst')?.value||'';
+  const tp=document.getElementById('sftp')?.value||'';
+  const f=[...deals].reverse().filter(d=>(!s||(d.address||'').toLowerCase().includes(s)||(d.owner||'').toLowerCase().includes(s)||(d.county||'').toLowerCase().includes(s))&&(!sf||d.state===sf)&&(!st||String(d.stage)===st)&&(!tp||d.type===tp));
+  const tb=document.getElementById('alltbody');
+  if(!f.length){tb.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:32px">No deals match.</td></tr>';return;}
+  tb.innerHTML=f.map(d=>{
+    const df=dd(d.followup);const fc=df===null?'':df<0?'color:var(--red);font-weight:600':df===0?'color:var(--gold);font-weight:600':'color:var(--green)';const fl=df===null?'—':df<0?Math.abs(df)+'d overdue':df===0?'Today!':df+'d';
+    return'<tr><td style="font-weight:600;color:var(--navy);cursor:pointer" onclick="openD(\''+d.id+'\')">'+d.address+'</td><td>'+(d.owner||'—')+'</td><td>'+(d.state||'AR')+'</td><td>'+chip(d.type)+'</td><td>'+sb(d.stage)+'</td><td>'+hlth(d)+'</td><td style="color:var(--green);font-weight:600">'+f$(eq(d))+'</td><td>'+dsbdg(d.dsStatus)+'</td><td><span style="'+fc+'">'+fl+'</span></td><td><button class="btn btno btnsm" onclick="openD(\''+d.id+'\')">Edit</button>'+(d.driveLink?' <a href="'+d.driveLink+'" target="_blank" class="btn btnge btnsm">&#x1F4C1;</a>':'')+'</td></tr>';
+  }).join('');
+}
+function rDS(){
+  const wd=deals.filter(d=>d.dsStatus).sort((a,b)=>new Date(b.dsSentAt||0)-new Date(a.dsSentAt||0));
+  document.getElementById('badgeds').textContent=wd.length;
+  if(!wd.length){document.getElementById('dscontent').innerHTML='<div style="text-align:center;color:var(--muted);padding:48px">No contracts sent yet.</div>';return;}
+  document.getElementById('dscontent').innerHTML='<div class="twrap"><table><thead><tr><th>Document</th><th>Address</th><th>Sent To</th><th>Status</th><th>Sent By</th><th>Date</th><th></th></tr></thead><tbody>'+wd.map(d=>'<tr><td style="font-weight:600">'+(d.dsDocType||'Contract')+'</td><td>'+d.address+'</td><td>'+(d.email||'—')+'</td><td>'+dsbdg(d.dsStatus)+'</td><td>'+(d.dsSentBy||'—')+'</td><td style="font-size:12px;color:var(--muted)">'+(d.dsSentAt?new Date(d.dsSentAt).toLocaleDateString():'—')+'</td><td><button class="btn btno btnsm" onclick="openD(\''+d.id+'\')">View</button> <button class="btn btnge btnsm" onclick="mrkSigned(\''+d.id+'\')">Mark Signed</button></td></tr>').join('')+'</tbody></table></div>';
+}
+function rAct(){
+  if(!activity.length){document.getElementById('actcontent').innerHTML='<div style="text-align:center;color:var(--muted);padding:32px">No activity yet.</div>';return;}
+  document.getElementById('actcontent').innerHTML=activity.slice(0,50).map(a=>'<div class="actitem"><span style="float:right;color:var(--muted)">'+new Date(a.time).toLocaleString()+'</span><strong style="color:var(--navy)">'+a.user+'</strong> '+a.action+(a.deal?' — <em>'+a.deal+'</em>':'')+'</div>').join('');
+}
+function rBadges(){
+  document.getElementById('badgepipe').textContent=deals.filter(d=>d.stage!=8&&d.stage!=9).length;
+  document.getElementById('badgefu').textContent=deals.filter(d=>d.followup&&d.stage!=8&&d.stage!=9&&dd(d.followup)<=0).length;
+}
+
+// Modal
+function openAdd(){eid=null;exps=[];tipst={};document.getElementById('mtitle').textContent='New Lead';document.getElementById('delbtn').style.display='none';document.getElementById('prtbtn').style.display='none';document.getElementById('dsbtn').style.display='none';clearF();document.getElementById('nsc').innerHTML='';document.getElementById('mdeal').classList.add('open');setTimeout(rns,100);}
+function openD(id){
+  const d=deals.find(x=>x.id===id);if(!d)return;
+  eid=id;exps=d.expenses?[...d.expenses]:[];tipst=d.tip?{...d.tip}:{};
+  document.getElementById('mtitle').textContent='Edit Deal';
+  document.getElementById('delbtn').style.display='inline-block';
+  document.getElementById('prtbtn').style.display='inline-block';
+  document.getElementById('dsbtn').style.display='inline-block';
+  document.getElementById('eid').value=id;
+  const sv=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
+  sv('fa',d.address);sv('fco',d.county);sv('fown',d.owner);sv('fem',d.email);sv('fph',d.phone);
+  sv('fmv',d.market);sv('fdt',d.debt);sv('fpp',d.purchase);sv('fcp',d.closePrice);
+  sv('ffu',d.followup);sv('fsp',d.split||'50');sv('fdr',d.driveLink);
+  sv('fnt',d.noteTitle);sv('fnc',d.noteCall);sv('fna',d.nextAction);sv('fld',d.legalDesc);sv('fpn',d.parcel);
+  const pt=d.petito||{};
+  const sp2=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
+  sp2('pet_p',pt.p);sp2('pet_e',pt.e);sp2('pet_t',pt.t);sp2('pet_i',pt.i);sp2('pet_t2',pt.t2);sp2('pet_o',pt.o);
+  document.getElementById('fst').value=d.state||'AR';
+  document.getElementById('ftp').value=d.type||'heir';
+  document.getElementById('fsg').value=d.stage||'1';
+  document.getElementById('fls').value=d.source||'tax-list';
+  document.getElementById('fpr').value=d.priority||'normal';
+  document.querySelectorAll('.tipitem').forEach(el=>{
+    if(tipst[el.dataset.k]){el.classList.add('done');el.textContent=el.textContent.replace('&#9744;','✓').replace('☐','✓');}
+    else{el.classList.remove('done');}
+  });
+  rExp();rpr();
+  document.getElementById('mdeal').classList.add('open');
+  setTimeout(rns,100);
+}
+function closeM(){document.getElementById('mdeal').classList.remove('open');eid=null;tipst={};exps=[];}
+function clearF(){
+  ['fa','fco','fown','fem','fph','fmv','fdt','fpp','fcp','ffu','fnt','fnc','fna','fld','fpn','fdr'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('ftp').value='heir';document.getElementById('fsg').value='1';
+  document.getElementById('fls').value='tax-list';document.getElementById('fpr').value='normal';
+  document.getElementById('fst').value='AR';document.getElementById('fsp').value='50';
+  ['pet_p','pet_e','pet_t','pet_i','pet_t2','pet_o'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.querySelectorAll('.tipitem').forEach(el=>{el.classList.remove('done');});
+  rExp();rpr();
+}
+function rns(){
+  const tp=document.getElementById('ftp')?.value||'heir';
+  const sg=Number(document.getElementById('fsg')?.value||1);
+  const steps=NS[tp]&&NS[tp][sg];
+  const c=document.getElementById('nsc');if(!c)return;
+  if(steps){c.innerHTML='<div class="nspanel"><div class="nstitle">&#x1F4CD; Next Steps &mdash; '+(SN[sg]||sg)+' &middot; '+(TN[tp]||tp)+'</div>'+steps.map((s,i)=>'<div class="nsitem"><div class="nsnum">'+(i+1)+'</div><div>'+s+'</div></div>').join('')+'</div>';}
+  else{c.innerHTML='';}
+}
+function tt(el){
+  const k=el.dataset.k;
+  if(tipst[k]){delete tipst[k];el.classList.remove('done');el.innerHTML=el.innerHTML.replace('✓','&#9744;');}
+  else{tipst[k]=true;el.classList.add('done');el.innerHTML=el.innerHTML.replace('&#9744;','✓');}
+}
+
+// Expenses
+function addExp(){
+  const cat=document.getElementById('ecat').value;
+  const desc=document.getElementById('edesc').value.trim();
+  const amt=parseFloat(document.getElementById('eamt').value)||0;
+  const dt=document.getElementById('edt').value||new Date().toISOString().slice(0,10);
+  if(!amt){toast('Enter an amount');return;}
+  exps.push({id:uid(),category:cat,desc:desc||cat,amount:amt,date:dt,addedBy:CU});
+  document.getElementById('edesc').value='';document.getElementById('eamt').value='';
+  rExp();rpr();toast('Added: $'+amt.toLocaleString());
+}
+function rmExp(id){exps=exps.filter(e=>e.id!==id);rExp();rpr();}
+function rExp(){
+  const list=document.getElementById('explist');if(!list)return;
+  if(!exps.length){list.innerHTML='<div style="font-size:12px;color:var(--muted);padding:4px">No expenses yet.</div>';}
+  else{list.innerHTML=exps.map(e=>'<div class="expitem"><span style="background:#e0e7ff;color:#3730a3;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;white-space:nowrap">'+e.category+'</span><span style="flex:1;font-size:12px">'+e.desc+'</span><span style="color:var(--red);font-weight:600;white-space:nowrap">-$'+Number(e.amount).toLocaleString()+'</span><button onclick="rmExp(\''+e.id+'\')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0 4px">&#215;</button></div>').join('');}
+  document.getElementById('exptotal').textContent='$'+exps.reduce((s,e)=>s+e.amount,0).toLocaleString();
+}
+function rpr(){
+  const sale=parseFloat(document.getElementById('fcp')?.value)||parseFloat(document.getElementById('fmv')?.value)||0;
+  const debt=parseFloat(document.getElementById('fdt')?.value)||0;
+  const et=exps.reduce((s,e)=>s+e.amount,0);
+  const sp=parseFloat(document.getElementById('fsp')?.value)||50;
+  const net=sale-et-debt;const share=net*(sp/100);
+  const se=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  se('pcsale','$'+Math.round(sale).toLocaleString());
+  se('pcexp','-$'+Math.round(et).toLocaleString());
+  se('pcdebt','-$'+Math.round(debt).toLocaleString());
+  se('pcnet','$'+Math.round(net).toLocaleString());
+  se('pcshare','$'+Math.round(share).toLocaleString());
+  se('pcsplitlbl','Your Share ('+sp+'%)');
+  const ps=document.getElementById('pcshare');if(ps)ps.style.color=share>0?'var(--gold)':'#fca5a5';
+}
+function openDrive(){const l=document.getElementById('fdr')?.value?.trim();if(l)window.open(l,'_blank');else toast('No Drive link saved yet');}
+
+// Save/Delete
+function saveDeal(){
+  const addr=document.getElementById('fa').value.trim();
+  if(!addr){alert('Address is required.');return;}
+  const d={
+    id:eid||uid(),address:addr,county:document.getElementById('fco').value.trim(),
+    state:document.getElementById('fst').value,owner:document.getElementById('fown').value.trim(),
+    email:document.getElementById('fem').value.trim(),phone:document.getElementById('fph').value.trim(),
+    type:document.getElementById('ftp').value,stage:document.getElementById('fsg').value,
+    market:document.getElementById('fmv').value,debt:document.getElementById('fdt').value,
+    purchase:document.getElementById('fpp').value,closePrice:document.getElementById('fcp').value,
+    source:document.getElementById('fls').value,followup:document.getElementById('ffu').value,
+    priority:document.getElementById('fpr').value,split:document.getElementById('fsp').value||'50',
+    driveLink:document.getElementById('fdr').value.trim(),
+    noteTitle:document.getElementById('fnt').value.trim(),noteCall:document.getElementById('fnc').value.trim(),
+    nextAction:document.getElementById('fna').value.trim(),legalDesc:document.getElementById('fld').value.trim(),
+    parcel:document.getElementById('fpn').value.trim(),
+    tip:{...tipst},expenses:[...exps],
+    petito:{
+      p:(document.getElementById('pet_p')||{}).value||'',
+      e:(document.getElementById('pet_e')||{}).value||'',
+      t:(document.getElementById('pet_t')||{}).value||'',
+      i:(document.getElementById('pet_i')||{}).value||'',
+      t2:(document.getElementById('pet_t2')||{}).value||'',
+      o:(document.getElementById('pet_o')||{}).value||''
+    },
+    editedBy:CU,updatedAt:new Date().toISOString()
+  };
+  if(eid){
+    const i=deals.findIndex(x=>x.id===eid);
+    if(i>=0){const prev=deals[i];d.createdAt=prev.createdAt;d.dsStatus=prev.dsStatus;d.dsEnvelopeId=prev.dsEnvelopeId;d.dsSentAt=prev.dsSentAt;d.dsSentBy=prev.dsSentBy;d.dsDocType=prev.dsDocType;
+    if(prev.stage!==d.stage)notify('STAGE CHANGED',d,'From '+(SN[prev.stage]||prev.stage)+' to '+(SN[d.stage]||d.stage));
+    deals[i]=d;}
+    logA('Updated deal',addr);
+  }else{d.createdAt=new Date().toISOString();deals.push(d);logA('Added new lead',addr);notify('NEW LEAD ADDED',d,'Type: '+(TN[d.type]||d.type));}
+  save();render();closeM();toast('Deal saved');
+}
+function delDeal(){
+  if(!eid)return;const d=deals.find(x=>x.id===eid);
+  if(!confirm('Delete this deal?'))return;
+  logA('Deleted deal',d?.address);deals=deals.filter(x=>x.id!==eid);
+  save();render();closeM();toast('Deal deleted');
+}
+
+// DocuSign
+function sendDS(){
+  const d=eid?deals.find(x=>x.id===eid):null;if(!d){toast('Save the deal first');return;}
+  const isNC=(d.state||'AR')==='NC';
+  const tmpl=isNC?(SET.nc||'523085fd-a107-48ff-84db-9b7d54535c6e'):(SET.ar||'7174a0a4-39d2-4977-be96-1e848bdbc2a0');
+  const info='FILL IN DOCUSIGN:\n\nSigner Name: '+(d.owner||'(enter name)')+'\nSigner Email: '+(d.email||'REQUIRED')+'\nAddress: '+d.address+'\nCounty: '+(d.county||'')+' County, '+(d.state||'AR')+'\nPurchase Price: '+f$(d.purchase)+'\n\nClick OK to open DocuSign.';
+  if(confirm(info)){
+    const i=deals.findIndex(x=>x.id===eid);
+    if(i>=0){deals[i].dsStatus='pending';deals[i].dsSentAt=new Date().toISOString();deals[i].dsSentBy=CU;deals[i].dsDocType=(isNC?'NC':'AR')+' Purchase Contract';}
+    logA('Sent DocuSign'+(isNC?' NC':' AR')+' contract',d.address);
+    save();render();window.open('https://app.docusign.com/send/documents/corporate/chooser?templateId='+tmpl,'_blank');
+    toast('DocuSign opened — fill in signer and send',5000);closeM();
+  }
+}
+function mrkSigned(id){
+  const i=deals.findIndex(d=>d.id===id);
+  if(i>=0){deals[i].dsStatus='signed';save();render();notify('CONTRACT SIGNED!',deals[i],'Signed: '+deals[i].address);toast('Marked as signed!');}
+}
+
+// Print
+function prtDeal(){
+  const d=eid?deals.find(x=>x.id===eid):null;if(!d){toast('Save first');return;}
+  const et=( d.expenses||[]).reduce((s,e)=>s+e.amount,0);
+  const sp=parseFloat(d.split||50);const sale=parseFloat(d.closePrice)||parseFloat(d.market)||0;
+  const debt=parseFloat(d.debt)||0;const net=sale-et-debt;const share=net*(sp/100);
+  const tkeys=['addr','assessor','tax','recorder','chain','liens','court','pacer','heirs','dm','skip','equity','cure','pain','offer','contract'];
+  const tlbls={addr:'Address Confirmed',assessor:'Assessor Pulled',tax:'Tax Collector',recorder:'Recorder Searched',chain:'Chain Traced',liens:'Liens Identified',court:'Court Records',pacer:'PACER',heirs:'Heirs Identified',dm:'Decision Maker',skip:'Skip Trace',equity:'Equity Calculated',cure:'Cure Cost',pain:'Pain Points',offer:'Offer Structured',contract:'Contract Signed'};
+  const w=window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><title>Deal Summary</title><style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;font-size:13px}h1{color:#1D3952;border-bottom:3px solid #C8992A;padding-bottom:8px}h2{color:#1D3952;font-size:13px;margin:16px 0 8px;text-transform:uppercase;letter-spacing:1px}.g{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}.f{padding:6px;background:#f5f3ef;border-radius:4px}.l{font-size:10px;color:#666;text-transform:uppercase}.v{font-weight:600;color:#1D3952}.tg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}.ti{padding:4px 8px;border-radius:4px;font-size:11px}.dn{background:#dcfce7;color:#15803d}.nd{background:#fee2e2;color:#991b1b}.pb{background:#1D3952;color:white;padding:14px;border-radius:8px}.pr{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:13px}.pr:last-child{border-bottom:none;font-size:15px;font-weight:700;color:#C8992A;padding-top:8px}</style></head><body>');
+  w.document.write('<h1>'+d.address+'</h1><div style="font-size:11px;color:#888;margin-bottom:16px">DTC LLC | 870-320-0803 | Printed '+new Date().toLocaleDateString()+' by '+CU+'</div>');
+  w.document.write('<div class="g">'+[['Owner',d.owner||'—'],['County',(d.county||'—')+', '+(d.state||'AR')],['Type',TN[d.type]||d.type],['Stage',SN[d.stage]||d.stage],['Market',f$(d.market)],['Debt',f$(d.debt)],['Purchase',f$(d.purchase)||'JV'],['Parcel',d.parcel||'—'],['Email',d.email||'—'],['Follow-Up',fd(d.followup)],['Priority',d.priority||'Normal'],['DocuSign',d.dsStatus||'Not sent']].map(([l,v])=>'<div class="f"><div class="l">'+l+'</div><div class="v">'+v+'</div></div>').join('')+'</div>');
+  if(d.noteTitle)w.document.write('<h2>Title / TIP Notes</h2><div style="background:#f5f3ef;padding:8px;border-radius:4px;white-space:pre-wrap;margin-bottom:12px">'+d.noteTitle+'</div>');
+  if(d.nextAction)w.document.write('<h2>Next Action</h2><div style="background:#fef3c7;padding:8px;border-radius:4px;margin-bottom:12px">'+d.nextAction+'</div>');
+  w.document.write('<h2>TIP Checklist</h2><div class="tg">'+tkeys.map(k=>'<div class="ti '+((d.tip||{})[k]?'dn':'nd')+'">'+(((d.tip||{})[k])?'&#x2713;':'&#x2717;')+' '+tlbls[k]+'</div>').join('')+'</div>');
+  if((d.expenses||[]).length){w.document.write('<h2>Expenses</h2><table style="width:100%;border-collapse:collapse;margin-bottom:12px">');(d.expenses||[]).forEach(e=>w.document.write('<tr><td style="padding:4px 8px;border-bottom:1px solid #eee">'+e.category+'</td><td style="padding:4px 8px;border-bottom:1px solid #eee">'+e.desc+'</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;color:#dc2626">-$'+Number(e.amount).toLocaleString()+'</td></tr>'));w.document.write('<tr><td colspan="2" style="padding:4px 8px;font-weight:700">Total</td><td style="padding:4px 8px;text-align:right;font-weight:700;color:#dc2626">-$'+et.toLocaleString()+'</td></tr></table>');}
+  w.document.write('<h2>Profit Calculator</h2><div class="pb">'+[['Sale Price','$'+Math.round(sale).toLocaleString()],['Expenses','-$'+Math.round(et).toLocaleString()],['Debt/Taxes','-$'+Math.round(debt).toLocaleString()],['Net Proceeds','$'+Math.round(net).toLocaleString()],['Your Share ('+sp+'%)','$'+Math.round(share).toLocaleString()]].map(([l,v])=>'<div class="pr"><span>'+l+'</span><span>'+v+'</span></div>').join('')+'</div></body></html>');
+  w.document.close();setTimeout(()=>w.print(),500);
+}
+
+// HARDCODED DEALS — permanently in file, always present
+const HARDCODED=[
+  {id:'justin-notland-2000',address:'2000 Notland Ct, Fayetteville, NC 28304',county:'Cumberland',state:'NC',owner:'Justin Paul - Sole Heir, Estate of Margaret J. Paul',email:'justinjeanpaul2001@gmail.com',phone:'910-354-9100',type:'probate',stage:'7',market:'375000',debt:'16000',purchase:'0',closePrice:'280000',source:'referral-investor',followup:'2026-05-01',priority:'hot',split:'50',driveLink:'https://drive.google.com/drive/folders/1WKjC7HclMKz9nYFrLH9KY4EP8qAW_ATl?usp=drive_link',noteTitle:'JV Settlement Agreement signed 3/11/2026 - DocuSign Envelope 62CEA36A-F67D-85AF-801A-8D96CDF68606. Justin Paul sole heir - brother predeceased mother Margaret J. Paul. Probate initiated Cumberland County NC. Irrevocable POA granted to DTC. Memorandum of JV recorded. All DTC expenses reimbursed from HUD before 50/50 split. Back taxes ~$16,000 paid at closing. NO buyer agent commission. Under contract at $280,000. Parcel: 9496-96-3071',noteCall:'JV signed 3/11/2026. Cullen Eggleston signed on behalf of DTC. Manager Authorization Resolution drafted.',nextAction:'Monitor probate completion Cumberland County Superior Court. Pay back taxes $16,000 from HUD at closing. No buyer agent commission.',legalDesc:'2000 Notland Ct, Fayetteville NC 28304 - Parcel No. 9496-96-3071',parcel:'9496-96-3071',tip:{addr:true,assessor:true,tax:true,recorder:true,chain:true,liens:true,court:true,heirs:true,dm:true,skip:true,equity:true,cure:true,pain:true,offer:true,contract:true},expenses:[{id:'e1',category:'Attorney',desc:'Attorney fees',amount:3090,date:'2026-03-11',addedBy:'Robert Davenport'},{id:'e2',category:'Filing Fees',desc:'Law service',amount:810,date:'2026-03-11',addedBy:'Robert Davenport'},{id:'e3',category:'Filing Fees',desc:'File docs',amount:77,date:'2026-03-11',addedBy:'Robert Davenport'},{id:'e4',category:'Notary',desc:'Notary fees',amount:77,date:'2026-03-11',addedBy:'Robert Davenport'},{id:'e5',category:'Locksmith',desc:'Locksmith',amount:137.50,date:'2026-03-11',addedBy:'Robert Davenport'},{id:'e6',category:'Repairs',desc:'Window repair',amount:80,date:'2026-03-11',addedBy:'Robert Davenport'},{id:'e7',category:'Filing Fees',desc:'Deed file',amount:29,date:'2026-03-11',addedBy:'Robert Davenport'},{id:'e8',category:'UPS/Shipping',desc:'UPS fees',amount:27.45,date:'2026-03-11',addedBy:'Robert Davenport'},
+        {id:'e9',category:'Notary',desc:'QC Deed notary',amount:75,date:'2026-04-24',addedBy:'Robert Davenport'},
+        {id:'e10',category:'UPS/Shipping',desc:'UPS - QC Deed to Attorney',amount:42.74,date:'2026-04-24',addedBy:'Robert Davenport'}],editedBy:'Robert Davenport',updatedAt:'2026-04-24T00:00:00.000Z',createdAt:'2026-03-11T00:00:00.000Z'}
+];
+
+// INIT
+window.addEventListener('load',function(){
+  load();
+  // Inject hardcoded deals — never lost
+  HARDCODED.forEach(function(hd){
+    if(!deals.find(function(d){return d.id===hd.id;})){deals.push(hd);}
+  });
+  save();
+  document.getElementById('ulabel').textContent=CU;
+  document.getElementById('sbuser').textContent=CU;
+  document.getElementById('setuser').value=CU.includes('Cullen')?'Cullen Eggleston':'Robert Davenport';
+  if(SET.ar)document.getElementById('setartmpl').value=SET.ar;
+  if(SET.nc)document.getElementById('setnctmpl').value=SET.nc;
+  render();
+  setInterval(save,30000);
+  setTimeout(checkFU,3000);
+});
+</script>
+</body>
+</html>
